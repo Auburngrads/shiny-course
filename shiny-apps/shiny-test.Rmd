@@ -1,0 +1,190 @@
+---
+title: "Untitled"
+author: "Jason K Freels"
+date: "July 12, 2016"
+output: slidy_presentation
+css: shiny.css
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Shiny App `navbar`
+
+```{r eruptions, echo=FALSE}
+library(shiny)
+shinyApp(options = list(height = '800px', width = '100%'),
+         
+ui = navbarPage(theme = shinythemes::shinytheme('flatly'),
+                includeCSS('shiny.css'),
+     tabPanel(h1('First Panel'),
+        sidebarLayout(
+          sidebarPanel(width = 3,
+            
+            selectInput("n_breaks1", 
+                        label = h2("Number of bins:"),
+                        choices = c(10, 20, 35, 50), 
+                        selected = 20),
+            
+              sliderInput("bw_adjust1",
+                        label = h3(HTML("<u>Bandwidth adjustment:</u>")),
+                        min = 0.2,
+                        max = 2,
+                        value = 1,
+                        step = 0.2)),
+  
+          mainPanel(width = 9,
+                    plotOutput('jason', height = '500px', width = '100%')))),
+  
+    tabPanel(h4('Second Panel'),
+       sidebarLayout(
+         sidebarPanel(
+           
+            selectInput("n_breaks2", 
+                        label = h5("Number of bins:"),
+                        choices = c(10, 20, 35, 50), 
+                        selected = 20),
+  
+            sliderInput("bw_adjust2", 
+                        label = h6("Bandwidth adjustment:"),
+                        min = 0.2, 
+                        max = 2, 
+                        value = 1, 
+                        step = 0.2)),
+         
+        mainPanel(plotOutput('jason2', height = '500px', width = '100%'))))),
+
+server = function(input, output, session) {
+  
+  output$jason <- renderPlot({
+  
+      hist(faithful$eruptions, 
+           probability = TRUE, 
+           breaks = as.numeric(input$n_breaks1),
+           xlab = "Duration (minutes)", 
+           main = "Geyser eruption duration")
+  
+      dens <- density(faithful$eruptions, adjust = input$bw_adjust1)
+      
+      lines(dens, col = "blue")
+})
+output$jason2 <- renderPlot({
+
+      hist(faithful$eruptions, 
+           probability = TRUE, 
+           breaks = as.numeric(input$n_breaks2),
+           xlab = "Duration (minutes)", 
+           main = "Geyser eruption duration")
+  
+      dens <- density(faithful$eruptions, adjust = input$bw_adjust2)
+      
+      lines(dens, col = "blue")
+})
+})
+```
+
+## Shiny App `navbar` with reactivity
+
+```{r eruptions, echo=FALSE}
+library(shiny)
+shinyApp(options = list(height = '800px', width = '100%'),
+         
+ui = navbarPage(theme = shinythemes::shinytheme('flatly'),
+                includeCSS('shiny.css'),
+     tabPanel(h1('First Panel'),
+        sidebarLayout(
+          sidebarPanel(width = 3,
+            
+            selectInput("n_breaks1", 
+                        label = h5("Number of bins:"),
+                        choices = c(10, 20, 35, 50), 
+                        selected = 20),         
+                       
+            sliderInput("bw_adjust1",
+                        label = h3(HTML("<u>Bandwidth adjustment:</u>")),
+                        min = 0.2,
+                        max = 2,
+                        value = 1,
+                        step = 0.2)),
+  
+          mainPanel(width = 9,
+                    plotOutput('jason', height = '500px', width = '100%')))),
+  
+    tabPanel(h4('Second Panel'),
+       sidebarLayout(
+         sidebarPanel(
+           
+            selectInput("n_breaks2", 
+                        label = h5("Number of bins:"),
+                        choices = c(10, 20, 35, 50), 
+                        selected = 20),
+  
+            sliderInput("bw_adjust2", 
+                        label = h6("Bandwidth adjustment:"),
+                        min = 0.2, 
+                        max = 2, 
+                        value = 1, 
+                        step = 0.2)),
+         
+        mainPanel(plotOutput('jason2', height = '500px', width = '100%')))),
+    
+    tabPanel(h4('Third Panel'),
+       sidebarLayout(
+         sidebarPanel(
+           
+            selectInput("n_breaks2", 
+                        label = h5("Number of bins:"),
+                        choices = c(10, 20, 35, 50), 
+                        selected = 20),
+  
+            sliderInput("bw_adjust2", 
+                        label = h6("Bandwidth adjustment:"),
+                        min = 0.2, 
+                        max = 2, 
+                        value = 1, 
+                        step = 0.2)),
+         
+        mainPanel(plotOutput('jason2', height = '500px', width = '100%'))))),
+
+server = function(input, output, session) {
+  
+  data <- faithful$eruptions
+  
+  output$breaks1 <- renderUI({
+      
+      sliderInput('n_breaks1', 
+                  h2('Number of Bins'), 
+                  min = min(data), 
+                  max = max(data), 
+                  step = range(data)/10, 
+                  value = min(data))
+}) 
+  
+  output$jason <- renderPlot({
+  
+      hist(data, 
+           probability = TRUE, 
+           breaks = as.numeric(input$n_breaks1),
+           xlab = "Duration (minutes)", 
+           main = "Geyser eruption duration")
+  
+      dens <- density(data, adjust = input$bw_adjust1)
+      
+      lines(dens, col = "blue")
+})
+output$jason2 <- renderPlot({
+
+      hist(faithful$eruptions, 
+           probability = TRUE, 
+           breaks = as.numeric(input$n_breaks2),
+           xlab = "Duration (minutes)", 
+           main = "Geyser eruption duration")
+  
+      dens <- density(faithful$eruptions, adjust = input$bw_adjust2)
+      
+      lines(dens, col = "blue")
+})
+})
+```

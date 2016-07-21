@@ -1,0 +1,11 @@
+h2 {
+  color:red;
+  text-transform:uppercase;
+  font-family: serif;
+  text-decoration: underline;
+  
+}
+
+.navbar-static-top {
+    border-radius: 100px;
+}
