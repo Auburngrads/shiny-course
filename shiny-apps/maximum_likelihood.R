@@ -121,7 +121,7 @@ par(family = 'serif', font = 1, mar = c(4.5,6,1,1))
   
 mtext(side = 3, 'f(t)', line = -2, at = -1, cex = 2, adj = 1, font = 2)
 
-text(x = 110, 
+text(x = 130, 
      y = .005, 
      labels = paste('total samples =', mle$sims, sep = " "), 
      cex = 2, 

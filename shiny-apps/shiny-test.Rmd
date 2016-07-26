@@ -1,24 +1,220 @@
 ---
-title: "Untitled"
-author: "Jason K Freels"
-date: "July 12, 2016"
+title: "Getting Started w/ Shiny"
+author: "Jason Freels"
+date: "`r format(Sys.Date(), '%d %b %Y')`"
 output: slidy_presentation
 css: shiny.css
 runtime: shiny
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+# Overview
+
+- Introduce Shiny and detail how it could benefit you
+
+- Understand the different methods of building and sharing apps
+
+- List some common steps for building shiny apps
+
+- Build the framework for two common app architectures
+
+    - `fluidPage`
+
+    - `navbarPage`
+
+- Walkthrough two apps to introduce reactivity 
+
+# What is Shiny & Why Should I Use It?
+
+## Shiny is...
+
+- An R Package for Building Interactive Web Applications
+
+- A direct link between R and various JavaScript libraries
+
+## Why should you use Shiny?
+
+- When I present a static plot (or when I’m presented a static plot) similar ‘what-if’ questions arise:
+
+    1) What would happen to the plot (or result) if you changed the value of one or more model parameters
+
+    2) What would happen if we chose a different statistical distribution?
+
+    3) What would happen if we changed an important assumption?
+
+-  Shiny allows us to show these alternate scenarios automatically
+
+# There are multiple ways to build shiny apps
+
+## Default rmarkdown
+
+```{r echo=TRUE, eval=FALSE}
+inputPanel(
+  selectInput("n_breaks", label = "Number of bins:",
+              choices = c(10, 20, 35, 50), selected = 20),
+  
+  sliderInput("bw_adjust", label = "Bandwidth adjustment:",
+              min = 0.2, max = 2, value = 1, step = 0.2)
+)
+
+renderPlot({
+  hist(faithful$eruptions, probability = TRUE, breaks = as.numeric(input$n_breaks),
+       xlab = "Duration (minutes)", main = "Geyser eruption duration")
+  
+  dens <- density(faithful$eruptions, adjust = input$bw_adjust)
+  lines(dens, col = "blue")
+})
 ```
 
-## Shiny App `navbar`
+## Default Single File App
 
-```{r eruptions, echo=FALSE}
+```{r echo=TRUE, eval=FALSE}
+library(shiny)
+
+# Define UI for application that draws a histogram
+ui <- fluidPage(
+   
+   # Application title
+   titlePanel("Old Faithful Geyser Data"),
+   
+   # Sidebar with a slider input for number of bins 
+   sidebarLayout(
+      sidebarPanel(
+         sliderInput("bins",
+                     "Number of bins:",
+                     min = 1,
+                     max = 50,
+                     value = 30)
+      ),
+      
+      # Show a plot of the generated distribution
+      mainPanel(
+         plotOutput("distPlot")
+      )
+   )
+)
+
+# Define server logic required to draw a histogram
+server <- function(input, output) {
+   
+   output$distPlot <- renderPlot({
+      # generate bins based on input$bins from ui.R
+      x    <- faithful[, 2] 
+      bins <- seq(min(x), max(x), length.out = input$bins + 1)
+      
+      # draw the histogram with the specified number of bins
+      hist(x, breaks = bins, col = 'darkgray', border = 'white')
+   })
+}
+
+# Run the application 
+shinyApp(ui = ui, server = server)
+```
+
+## My Way - Works in all configuration `so far`
+
+```{r echo=TRUE, eval=FALSE}
+shinyApp(options = list(height = '600px'),
+
+ui = fluidPage(theme = shinythemes::shinytheme('flatly'),'',
+       sidebarLayout(
+         sidebarPanel(
+           selectInput("n_breaks", 
+                       label = "Number of bins:",
+                       choices = c(10, 20, 35, 50), 
+                       selected = 20),
+  
+           sliderInput("bw_adjust", 
+                       label = "Bandwidth adjustment:",
+                       min = 0.2, 
+                       max = 2, 
+                       value = 1, 
+                       step = 0.2)),
+         mainPanel(plotOutput('test', height = '500px', width = '100%')))),
+server = function(input, output, session) {
+  
+output$test <- renderPlot({
+  
+      hist(faithful$eruptions, 
+           probability = TRUE, 
+           breaks = as.numeric(input$n_breaks),
+           xlab = "Duration (minutes)", 
+           main = "Geyser eruption duration")
+  
+      dens <- density(faithful$eruptions, adjust = input$bw_adjust)
+      
+      lines(dens, col = "blue")
+})
+})
+```
+
+# How Will You Share Your App?
+
+## Output formats
+
+- As an HTML document
+
+    + Provides a large canvas to discuss details of the app
+
+    + Great for making interactive notes
+    
+- As an HTML~5~ presentation
+
+    + Great for presenting teaching apps
+
+    + Requires more focus on managing limited real-estate
+    
+- As an element on your website
+
+    + Create interactive dashboards
+
+    + Host instructional apps for your workforce
+
+## Hosting services
+
+- [Shiny Server](https://www.rstudio.com/products/shiny/shiny-server/) 
+
+    - Standand alone, Linux-based infrastructure 
+
+    - Provides a persistent connection between R serves and your app
+
+    - Is free (except for Shiny Server Pro - $15K)
+
+- [shinyapps.io](https://www.shinyapps.io)
+
+    - Fully supported, Linux-based insfrastructure
+
+    - Provides a persistent connection between R serves and your app
+
+    - Has different pricing levels based on the amount of time your apps are running
+
+# Helpful Shiny References
+
+- [__shiny gallery__](http://shiny.rstudio.com/gallery)
+
+- [__shiny user gallery__](https://www.rstudio.com/products/shiny/shiny-user-showcase/)
+
+- [__show me shiny__](http://www.showmeshiny.com)
+
+- [__shiny documentation__](https://cran.r-project.org/web/packages/shiny/index.html)
+
+- [__R-bloggers__](http://www.r-bloggers.com/)
+
+- [__shiny Google group__](https://groups.google.com/forum/#!forum/shiny-discuss/)
+
+- [__StackOverflow__](http://www.stackoverflow.com/)
+
+- [__HTML Widgets__](http://www.htmlwidgets.org)
+
+- [__shiny GitHub page__](https://github.com/rstudio/shiny)
+
+# Shiny App `navbar`
+
+```{r}
 library(shiny)
 shinyApp(options = list(height = '800px', width = '100%'),
          
 ui = navbarPage(theme = shinythemes::shinytheme('flatly'),
-                includeCSS('shiny.css'),
+                includeCSS('../shiny.css'),
      tabPanel(h1('First Panel'),
         sidebarLayout(
           sidebarPanel(width = 3,
@@ -85,106 +281,4 @@ output$jason2 <- renderPlot({
 })
 ```
 
-## Shiny App `navbar` with reactivity
 
-```{r eruptions, echo=FALSE}
-library(shiny)
-shinyApp(options = list(height = '800px', width = '100%'),
-         
-ui = navbarPage(theme = shinythemes::shinytheme('flatly'),
-                includeCSS('shiny.css'),
-     tabPanel(h1('First Panel'),
-        sidebarLayout(
-          sidebarPanel(width = 3,
-            
-            selectInput("n_breaks1", 
-                        label = h5("Number of bins:"),
-                        choices = c(10, 20, 35, 50), 
-                        selected = 20),         
-                       
-            sliderInput("bw_adjust1",
-                        label = h3(HTML("<u>Bandwidth adjustment:</u>")),
-                        min = 0.2,
-                        max = 2,
-                        value = 1,
-                        step = 0.2)),
-  
-          mainPanel(width = 9,
-                    plotOutput('jason', height = '500px', width = '100%')))),
-  
-    tabPanel(h4('Second Panel'),
-       sidebarLayout(
-         sidebarPanel(
-           
-            selectInput("n_breaks2", 
-                        label = h5("Number of bins:"),
-                        choices = c(10, 20, 35, 50), 
-                        selected = 20),
-  
-            sliderInput("bw_adjust2", 
-                        label = h6("Bandwidth adjustment:"),
-                        min = 0.2, 
-                        max = 2, 
-                        value = 1, 
-                        step = 0.2)),
-         
-        mainPanel(plotOutput('jason2', height = '500px', width = '100%')))),
-    
-    tabPanel(h4('Third Panel'),
-       sidebarLayout(
-         sidebarPanel(
-           
-            selectInput("n_breaks2", 
-                        label = h5("Number of bins:"),
-                        choices = c(10, 20, 35, 50), 
-                        selected = 20),
-  
-            sliderInput("bw_adjust2", 
-                        label = h6("Bandwidth adjustment:"),
-                        min = 0.2, 
-                        max = 2, 
-                        value = 1, 
-                        step = 0.2)),
-         
-        mainPanel(plotOutput('jason2', height = '500px', width = '100%'))))),
-
-server = function(input, output, session) {
-  
-  data <- faithful$eruptions
-  
-  output$breaks1 <- renderUI({
-      
-      sliderInput('n_breaks1', 
-                  h2('Number of Bins'), 
-                  min = min(data), 
-                  max = max(data), 
-                  step = range(data)/10, 
-                  value = min(data))
-}) 
-  
-  output$jason <- renderPlot({
-  
-      hist(data, 
-           probability = TRUE, 
-           breaks = as.numeric(input$n_breaks1),
-           xlab = "Duration (minutes)", 
-           main = "Geyser eruption duration")
-  
-      dens <- density(data, adjust = input$bw_adjust1)
-      
-      lines(dens, col = "blue")
-})
-output$jason2 <- renderPlot({
-
-      hist(faithful$eruptions, 
-           probability = TRUE, 
-           breaks = as.numeric(input$n_breaks2),
-           xlab = "Duration (minutes)", 
-           main = "Geyser eruption duration")
-  
-      dens <- density(faithful$eruptions, adjust = input$bw_adjust2)
-      
-      lines(dens, col = "blue")
-})
-})
-```
